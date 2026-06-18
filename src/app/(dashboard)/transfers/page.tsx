@@ -444,7 +444,7 @@ export default function TransfersPage() {
                       <p className="text-xs text-slate-500">Send a confirmation email with this receipt</p>
                     </div>
                     <Input
-                      className="w-52 text-sm"
+                      className="w-full sm:w-52 text-sm"
                       type="email"
                       placeholder="email@recipient.com"
                       value={emailInput}

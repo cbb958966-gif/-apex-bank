@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+/* Safe area padding for notched phones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @theme {
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-poppins), var(--font-sans), system-ui, sans-serif;
@@ -33,6 +42,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-geist), system-ui, sans-serif;
+    min-height: 100dvh;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-poppins), var(--font-sans), system-ui, sans-serif;

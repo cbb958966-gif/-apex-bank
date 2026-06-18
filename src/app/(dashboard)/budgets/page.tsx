@@ -72,7 +72,7 @@ export default function BudgetsPage() {
                   <div className="flex items-center gap-2">
                     {isOver && <Badge variant="danger"><AlertTriangle className="h-3 w-3 mr-1" /> Over</Badge>}
                     {isWarning && <Badge variant="warning"><AlertTriangle className="h-3 w-3 mr-1" /> 80%+</Badge>}
-                    <Button variant="ghost" size="icon" className="h-8 w-8"><Edit2 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-10 w-10"><Edit2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
 

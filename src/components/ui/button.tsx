@@ -25,9 +25,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
     const sizes: Record<string, string> = {
       default: 'h-11 px-6 py-3',
-      sm: 'h-9 rounded-lg px-4 text-xs',
+      sm: 'min-h-[44px] h-10 rounded-lg px-4 text-xs',
       lg: 'h-14 rounded-xl px-10 text-base',
-      icon: 'h-10 w-10',
+      icon: 'h-11 w-11',
     }
     return (
       <button

@@ -19,7 +19,7 @@ export function QuickActions() {
       <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick actions</h2>
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {actions.map((action, i) => (
-          <Link key={i} href={action.href} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 card-hover group">
+          <Link key={i} href={action.href} className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 card-hover group">
             <div className={`h-11 w-11 rounded-xl ${action.color} flex items-center justify-center transition-transform group-hover:scale-110`}>
               <action.icon className="h-5 w-5" />
             </div>

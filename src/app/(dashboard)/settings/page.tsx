@@ -120,7 +120,7 @@ export default function SettingsPage() {
               <h4 className="text-sm font-medium mb-4">Address</h4>
               <div className="space-y-4">
                 <Input placeholder="Street address" value={formData.street} onChange={e => setFormData(p => ({ ...p, street: e.target.value }))} disabled={!editing} />
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Input placeholder="City" value={formData.city} onChange={e => setFormData(p => ({ ...p, city: e.target.value }))} disabled={!editing} />
                   <Input placeholder="State" value={formData.state} onChange={e => setFormData(p => ({ ...p, state: e.target.value }))} disabled={!editing} />
                   <Input placeholder="ZIP" value={formData.zip} onChange={e => setFormData(p => ({ ...p, zip: e.target.value }))} disabled={!editing} />

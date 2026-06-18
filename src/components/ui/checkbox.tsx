@@ -11,7 +11,7 @@ interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, label, id, ...props }, ref) => (
     <div className="flex items-center gap-2">
-      <div className="relative">
+      <label className="relative flex items-center justify-center cursor-pointer min-h-[44px] min-w-[44px] -ml-2">
         <input
           ref={ref}
           id={id}
@@ -20,7 +20,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           {...props}
         />
         <Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-3 w-3 opacity-0 peer-checked:opacity-100 text-white" />
-      </div>
+      </label>
       {label && <label htmlFor={id} className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">{label}</label>}
     </div>
   )

@@ -60,7 +60,7 @@ const navSections = [
   },
 ]
 
-export function Sidebar() {
+export function Sidebar({ onNavClick }: { onNavClick?: () => void }) {
   const pathname = usePathname()
   const { user, logout, isAdmin } = useAuth()
 
@@ -135,8 +135,8 @@ export function Sidebar() {
         </div>
       </aside>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-30 px-4 py-2">
-        <div className="flex justify-around">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-30 safe-area-bottom">
+        <div className="flex justify-around px-2 pt-1">
           {[
             { href: '/overview', icon: LayoutDashboard, label: 'Home' },
             { href: '/accounts', icon: Wallet, label: 'Accounts' },
@@ -146,7 +146,7 @@ export function Sidebar() {
           ].map(item => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.href} href={item.href} className={cn('flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-xs font-medium transition-all', isActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500')}>
+              <Link key={item.href} href={item.href} onClick={onNavClick} className={cn('flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-2 rounded-xl text-[11px] font-medium transition-all', isActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500')}>
                 <item.icon className="h-5 w-5" />
                 {item.label}
               </Link>

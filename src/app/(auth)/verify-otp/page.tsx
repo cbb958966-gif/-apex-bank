@@ -68,9 +68,9 @@ function VerifyOtpForm() {
         <p className="text-slate-500 dark:text-slate-400">Enter the 6-digit code sent to <strong>{email}</strong></p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex gap-3 justify-center" onPaste={handlePaste}>
+        <div className="flex gap-2 sm:gap-3 justify-center" onPaste={handlePaste}>
           {code.map((digit, i) => (
-            <input key={i} ref={el => { inputRefs.current[i] = el }} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleChange(i, e.target.value)} onKeyDown={e => handleKeyDown(i, e)} className="w-12 h-14 text-center text-xl font-bold rounded-xl border border-slate-200 bg-white focus:border-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 outline-none transition-all dark:border-slate-700 dark:bg-slate-800 dark:focus:border-white dark:focus:ring-white" />
+            <input key={i} ref={el => { inputRefs.current[i] = el }} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleChange(i, e.target.value)} onKeyDown={e => handleKeyDown(i, e)} className="w-[44px] sm:w-12 h-14 text-center text-xl font-bold rounded-xl border border-slate-200 bg-white focus:border-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 outline-none transition-all dark:border-slate-700 dark:bg-slate-800 dark:focus:border-white dark:focus:ring-white" />
           ))}
         </div>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}

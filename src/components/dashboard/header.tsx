@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { db } from '@/lib/db'
 import { getRelativeTime } from '@/lib/utils'
 
-export function Header() {
-  const { user, logout } = useAuth()
+export function Header({ onToggleMenu }: { onToggleMenu?: () => void }) {
+  const { user } = useAuth()
   const { theme, setTheme } = useTheme()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -22,7 +22,7 @@ export function Header() {
     <header className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 h-16">
       <div className="flex items-center justify-between h-full px-6">
         <div className="flex items-center gap-4 flex-1">
-          <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button className="lg:hidden p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800" onClick={onToggleMenu}>
             <Menu className="h-5 w-5" />
           </button>
 
@@ -45,7 +45,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             {theme === 'dark' ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
           </button>
@@ -53,7 +53,7 @@ export function Header() {
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+              className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
             >
               <Bell className="h-4.5 w-4.5" />
               {unreadCount > 0 && (
@@ -64,7 +64,7 @@ export function Header() {
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-slide-in">
+              <div className="absolute right-0 top-12 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-slide-in">
                 <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                   <h3 className="font-semibold text-sm">Notifications</h3>
                   <button onClick={() => db.notifications.markAllAsRead()} className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white">Mark all read</button>

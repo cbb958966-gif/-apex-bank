@@ -51,8 +51,8 @@ export default function DocumentsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-[10px] capitalize">{doc.type}</Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8"><Eye className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-10 w-10"><Eye className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-10 w-10"><Download className="h-4 w-4" /></Button>
                 </div>
               </div>
             ))}
