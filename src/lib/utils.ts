@@ -140,3 +140,30 @@ export function debounce<T extends (...args: unknown[]) => void>(fn: T, ms = 300
     timeoutId = setTimeout(() => fn.apply(this, args), ms)
   }
 }
+
+async function sha256(message: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 36).toString(36)
+  ).join('')
+  const hashed = await sha256(salt + password)
+  return salt + ':' + hashed
+}
+
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const [salt, hash] = stored.split(':')
+  if (!salt || !hash) return false
+  const hashed = await sha256(salt + password)
+  return hashed === hash
+}
+
+export function generateOtp(): string {
+  return String(Math.floor(100000 + Math.random() * 900000))
+}

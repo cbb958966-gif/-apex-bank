@@ -16,10 +16,43 @@ export const seedUser: User = {
   createdAt: '2023-01-15T08:30:00Z',
   isVerified: true,
   twoFactorEnabled: true,
+  role: 'user',
   preferences: {
     currency: 'USD',
     language: 'en',
     theme: 'light',
+    notifications: {
+      email: true,
+      sms: true,
+      push: true,
+      transactionAlerts: true,
+      securityAlerts: true,
+      marketingEmails: false,
+    },
+  },
+}
+
+export const seedAdminUser: User = {
+  id: 'usr_admin',
+  firstName: 'Admin',
+  lastName: 'Apex',
+  email: 'admin@apexbank.com',
+  phone: '+1 (555) 000-0000',
+  dateOfBirth: '1985-01-01',
+  address: {
+    street: '1 Apex Plaza',
+    city: 'New York',
+    state: 'NY',
+    zip: '10001',
+  },
+  createdAt: '2022-01-01T00:00:00Z',
+  isVerified: true,
+  twoFactorEnabled: true,
+  role: 'admin',
+  preferences: {
+    currency: 'USD',
+    language: 'en',
+    theme: 'dark',
     notifications: {
       email: true,
       sms: true,

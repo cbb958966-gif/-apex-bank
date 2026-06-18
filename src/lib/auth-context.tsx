@@ -3,17 +3,19 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { db } from './db'
-import { generateId } from './utils'
+import { generateId, hashPassword, verifyPassword, generateOtp } from './utils'
+import { seedAdminUser } from './seed-data'
 
 interface AuthContextType {
   user: Record<string, unknown> | null
   isAuthenticated: boolean
+  isAdmin: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signup: (data: any) => Promise<{ success: boolean; error?: string }>
+  signup: (data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
   logout: () => void
-  updateUser: (data: any) => void
-  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>
+  updateUser: (data: Record<string, unknown>) => void
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string; otp?: string }>
   verifyOtp: (code: string) => Promise<{ success: boolean; error?: string }>
   attemptCount: number
   isLocked: boolean
@@ -25,45 +27,75 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const LOCK_DURATION = 15 * 60 * 1000
 const MAX_ATTEMPTS = 5
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<Record<string, unknown> | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [attemptCount, setAttemptCount] = useState(0)
-  const [isLocked, setIsLocked] = useState(false)
-  const [lockEndTime, setLockEndTime] = useState<number | null>(null)
-  const router = useRouter()
-
-  useEffect(() => {
+function getInitialLockState(): { isLocked: boolean; lockEndTime: number | null } {
+  try {
     const lockData = localStorage.getItem('apex_lock')
     if (lockData) {
       const { endTime } = JSON.parse(lockData)
       if (Date.now() < endTime) {
-        setIsLocked(true)
-        setLockEndTime(endTime)
-        const remaining = endTime - Date.now()
-        setTimeout(() => {
+        return { isLocked: true, lockEndTime: endTime }
+      }
+      localStorage.removeItem('apex_lock')
+    }
+  } catch { /* ignore */ }
+  return { isLocked: false, lockEndTime: null }
+}
+
+function getInitialAttempts(): number {
+  try {
+    return parseInt(localStorage.getItem('apex_attempts') || '0')
+  } catch {
+    return 0
+  }
+}
+
+function getInitialUser(): Record<string, unknown> | null {
+  try {
+    const session = db.session.get()
+    if (session) {
+      const storedUser = db.users.findById(session.userId as string)
+      if (storedUser) return storedUser
+      db.session.clear()
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const initialLock = getInitialLockState()
+  const [user, setUser] = useState<Record<string, unknown> | null>(getInitialUser)
+  const [isLoading, setIsLoading] = useState(true)
+  const [attemptCount, setAttemptCount] = useState(getInitialAttempts)
+  const [isLocked, setIsLocked] = useState(initialLock.isLocked)
+  const [lockEndTime, setLockEndTime] = useState<number | null>(initialLock.lockEndTime)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isLocked && lockEndTime) {
+      const remaining = lockEndTime - Date.now()
+      if (remaining > 0) {
+        const timer = setTimeout(() => {
           setIsLocked(false)
           setLockEndTime(null)
           setAttemptCount(0)
           localStorage.removeItem('apex_lock')
         }, remaining)
-      } else {
-        localStorage.removeItem('apex_lock')
+        return () => clearTimeout(timer)
       }
     }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    const attempts = localStorage.getItem('apex_attempts')
-    if (attempts) setAttemptCount(parseInt(attempts))
-
-    const session = db.session.get()
-    if (session) {
-      const storedUser = db.users.findById(session.userId as string)
-      if (storedUser) {
-        setUser(storedUser)
-      } else {
-        db.session.clear()
-      }
+  useEffect(() => {
+    const users = db.users.getAll() as Array<Record<string, unknown>>
+    const hasAdmin = users.some((u) => u.role === 'admin')
+    if (!hasAdmin) {
+      hashPassword('admin123').then((hashed) => {
+        const adminUser = { ...seedAdminUser, password: hashed }
+        users.push(adminUser)
+        db.users.setAll(users)
+      })
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(false)
   }, [])
 
@@ -80,7 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const foundUser = db.users.findByEmail(email)
-    if (!foundUser || foundUser.password !== password) {
+    const passwordValid = foundUser ? await verifyPassword(password, foundUser.password as string) : false
+    if (!foundUser || !passwordValid) {
       const newAttempts = attempts + 1
       setAttemptCount(newAttempts)
       localStorage.setItem('apex_attempts', newAttempts.toString())
@@ -106,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       location: 'New York, NY',
       device: 'Chrome / Windows 11',
       status: 'success',
-    })
+    } as Record<string, unknown>)
 
     setAttemptCount(0)
     localStorage.removeItem('apex_attempts')
@@ -114,19 +147,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true }
   }, [isLocked])
 
-  const signup = useCallback(async (data: any) => {
+  const signup = useCallback(async (data: Record<string, unknown>) => {
     const existingUser = db.users.findByEmail(data.email as string)
     if (existingUser) return { success: false, error: 'An account with this email already exists.' }
 
+    const hashedPassword = await hashPassword(data.password as string)
+
     const newUser = {
       ...data,
+      password: hashedPassword,
       id: generateId('usr'),
       createdAt: new Date().toISOString(),
       isVerified: true,
       twoFactorEnabled: false,
+      role: 'user',
       preferences: {
-        currency: 'USD',
-        language: 'en',
+        currency: 'USD' as const,
+        language: 'en' as const,
         theme: 'light' as const,
         notifications: {
           email: true,
@@ -191,10 +228,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/login')
   }, [router])
 
-  const updateUser = useCallback((data: any) => {
+  const updateUser = useCallback((data: Record<string, unknown>) => {
     if (user) {
-      const updated = { ...user, ...data }
-      db.users.update(user.id as string, data)
+      const safeData = { ...data }
+      if (user.role !== 'admin') {
+        delete safeData.role
+        delete safeData.isAdmin
+      }
+      const updated = { ...user, ...safeData }
+      db.users.update(user.id as string, safeData)
       setUser(updated)
     }
   }, [user])
@@ -203,12 +245,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const foundUser = db.users.findByEmail(email)
     if (!foundUser) return { success: false, error: 'No account found with this email.' }
 
+    const otp = generateOtp()
     localStorage.setItem('apex_reset_email', email)
-    return { success: true }
+    localStorage.setItem('apex_reset_otp', otp)
+    localStorage.setItem('apex_reset_otp_expiry', String(Date.now() + 10 * 60 * 1000))
+    return { success: true, otp }
   }, [])
 
-  const verifyOtp = useCallback(async (_code: string) => {
-    if (_code === '123456' || _code.length === 6) {
+  const verifyOtp = useCallback(async (code: string) => {
+    const storedOtp = localStorage.getItem('apex_reset_otp')
+    const expiry = localStorage.getItem('apex_reset_otp_expiry')
+
+    if (!storedOtp || !expiry || Date.now() > parseInt(expiry)) {
+      localStorage.removeItem('apex_reset_otp')
+      localStorage.removeItem('apex_reset_otp_expiry')
+      return { success: false, error: 'Verification code expired. Please request a new one.' }
+    }
+
+    if (code === storedOtp) {
+      localStorage.removeItem('apex_reset_otp')
+      localStorage.removeItem('apex_reset_otp_expiry')
       return { success: true }
     }
     return { success: false, error: 'Invalid verification code.' }
@@ -219,6 +275,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
+        isAdmin: (user?.role as string) === 'admin',
         isLoading,
         login,
         signup,

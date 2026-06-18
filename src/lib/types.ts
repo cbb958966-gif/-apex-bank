@@ -15,6 +15,7 @@ export interface User {
   createdAt: string
   isVerified: boolean
   twoFactorEnabled: boolean
+  role: 'user' | 'admin'
   preferences: {
     currency: string
     language: string

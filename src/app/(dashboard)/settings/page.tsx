@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useTheme } from 'next-themes'
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, isAdmin } = useAuth()
   const { theme, setTheme } = useTheme()
   const [editing, setEditing] = useState(false)
   const [formData, setFormData] = useState({
@@ -143,6 +143,9 @@ export default function SettingsPage() {
               <CardTitle>Account Balances</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                {isAdmin ? 'As an admin, you can adjust account balances below.' : 'View your account balances. Contact support for balance adjustments.'}
+              </p>
               {accounts.map((account: any) => (
                 <div key={account.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-3">
                   <div className="flex items-center justify-between">
@@ -150,12 +153,14 @@ export default function SettingsPage() {
                       <h4 className="font-medium">{account.name}</h4>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{account.type} • {account.nickname}</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => {
-                      setEditingAccount(account.id)
-                      setBalanceInput(account.balance.toString())
-                    }}>
-                      <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
-                    </Button>
+                    {isAdmin && (
+                      <Button variant="outline" size="sm" onClick={() => {
+                        setEditingAccount(account.id)
+                        setBalanceInput(account.balance.toString())
+                      }}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                      </Button>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Wallet className="h-4 w-4 text-slate-500" />

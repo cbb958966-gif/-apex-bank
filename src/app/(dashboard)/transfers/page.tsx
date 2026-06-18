@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { db } from '@/lib/db'
 import { seedAccounts, seedTransfers } from '@/lib/seed-data'
 import { formatCurrency, formatDateTime, generateId } from '@/lib/utils'
-import { sendTransferReceipt } from '@/lib/email'
+import { sendTransferReceipt, generateReceiptHtml, generateMailtoLink, generateReceiptText } from '@/lib/email'
 import {
   ArrowRight, Send, Clock, CheckCircle2, XCircle, Loader2, Plus, ArrowUpDown,
   Search, Filter, Mail, AlertCircle, Receipt, Printer, Download, ChevronLeft,
@@ -105,6 +105,8 @@ export default function TransfersPage() {
   const handleConfirm = async () => {
     setIsSubmitting(true)
 
+    // eslint-disable-next-line react-hooks/purity
+    const timestamp = Date.now()
     const newTransfer = {
       id: generateId('xfr'),
       type: formData.toType,
@@ -117,8 +119,8 @@ export default function TransfersPage() {
       fee: formData.toType === 'wire' ? 25 : 0,
       description: formData.description,
       status: 'completed',
-      date: new Date().toISOString(),
-      reference: `${formData.toType.toUpperCase().slice(0, 4)}-${Date.now()}`,
+      date: new Date(timestamp).toISOString(),
+      reference: `${formData.toType.toUpperCase().slice(0, 4)}-${timestamp}`,
     }
 
     db.transfers.add(newTransfer)
@@ -160,7 +162,7 @@ export default function TransfersPage() {
       toName: completedTransfer.toName as string,
       fromName: fromAccount?.nickname || 'Apex Bank',
       amount: formatCurrency(completedTransfer.amount as number),
-      currency: completedTransfer.currency as string,
+      currency: 'USD',
       reference: completedTransfer.reference as string,
       date: formatDateTime(completedTransfer.date as string),
       description: completedTransfer.description as string,
@@ -169,13 +171,40 @@ export default function TransfersPage() {
     })
 
     setIsSendingEmail(false)
-    setSuccessMessage(result ? 'Receipt emailed successfully!' : 'Failed to send email. Check your EmailJS setup.')
+    setSuccessMessage(result ? 'Receipt emailed! Check spam folder if not received.' : 'Failed to send email. Check your EmailJS setup.')
     setSuccess(true)
     setTimeout(() => setSuccess(false), 4000)
   }
 
   const handlePrintReceipt = () => {
     window.print()
+  }
+
+  const handleDownloadReceipt = () => {
+    if (!completedTransfer) return
+    const fromAccount2 = accounts.find((a: any) => a.id === completedTransfer.fromAccount)
+    const params = {
+      to_email: emailInput || (completedTransfer.recipientEmail as string) || '',
+      toName: completedTransfer.toName as string,
+      fromName: fromAccount2?.nickname || 'Apex Bank',
+      amount: formatCurrency(completedTransfer.amount as number),
+      currency: 'USD',
+      reference: completedTransfer.reference as string,
+      date: formatDateTime(completedTransfer.date as string),
+      description: completedTransfer.description as string,
+      type: completedTransfer.type as string,
+      fee: formatCurrency(completedTransfer.fee as number),
+    }
+    const html = generateReceiptHtml(params)
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `receipt-${completedTransfer.reference}.html`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const handleNewTransfer = () => {
@@ -407,7 +436,7 @@ export default function TransfersPage() {
                   </div>
                 </div>
 
-                <div className="px-6 pb-6">
+                <div className="px-6 pb-6 space-y-3">
                   <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-4 flex items-center gap-3">
                     <Mail className="h-5 w-5 text-blue-500 shrink-0" />
                     <div className="flex-1">
@@ -425,11 +454,36 @@ export default function TransfersPage() {
                       {isSendingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>Send <Mail className="h-3.5 w-3.5 ml-1" /></>}
                     </Button>
                   </div>
+                  {emailInput && completedTransfer && (() => {
+                    const from = accounts.find((a: any) => a.id === completedTransfer.fromAccount)
+                    const mailParams = {
+                      to_email: emailInput,
+                      toName: completedTransfer.toName as string,
+                      fromName: from?.nickname || 'Apex Bank',
+                      amount: formatCurrency(completedTransfer.amount as number),
+                      currency: 'USD',
+                      reference: completedTransfer.reference as string,
+                      date: formatDateTime(completedTransfer.date as string),
+                      description: completedTransfer.description as string,
+                      type: completedTransfer.type as string,
+                      fee: formatCurrency(completedTransfer.fee as number),
+                    }
+                    return (
+                      <a
+                        href={generateMailtoLink(mailParams)}
+                        className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors ml-1"
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        Or open in your email client instead
+                      </a>
+                    )
+                  })()}
                 </div>
               </div>
 
               <div className="flex gap-3 print:hidden">
                 <Button variant="outline" className="flex-1" onClick={handlePrintReceipt}><Printer className="h-4 w-4 mr-2" /> Print</Button>
+                <Button variant="outline" className="flex-1" onClick={handleDownloadReceipt}><Download className="h-4 w-4 mr-2" /> Download</Button>
                 <Button variant="outline" className="flex-1" onClick={handleNewTransfer}>New Transfer <Plus className="h-4 w-4 ml-2" /></Button>
               </div>
             </div>

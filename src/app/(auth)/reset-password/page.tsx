@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Shield, Loader2, Eye, EyeOff, CheckCircle2, Check, X, Lock } from 'lucide-react'
-import { getPasswordStrength } from '@/lib/utils'
+import { getPasswordStrength, hashPassword } from '@/lib/utils'
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -26,9 +26,10 @@ function ResetPasswordForm() {
     if (passwordStrength.score < 60) { setError('Password is too weak'); return }
     if (password !== confirmPassword) { setError('Passwords do not match'); return }
     setIsSubmitting(true)
-    const users = JSON.parse(localStorage.getItem('apex_users') || '[]')
-    const idx = users.findIndex((u: any) => u.email === email)
-    if (idx !== -1) { users[idx].password = password; localStorage.setItem('apex_users', JSON.stringify(users)) }
+    const hashed = await hashPassword(password)
+    const users: Array<Record<string, unknown>> = JSON.parse(localStorage.getItem('apex_users') || '[]')
+    const idx = users.findIndex((u) => u.email === email)
+    if (idx !== -1) { users[idx].password = hashed; localStorage.setItem('apex_users', JSON.stringify(users)) }
     setSuccess(true)
     setIsSubmitting(false)
   }

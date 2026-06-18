@@ -78,7 +78,7 @@ function VerifyOtpForm() {
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Verify code <ArrowRight className="ml-2 h-4 w-4" /></>}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">Demo code: <span className="font-mono font-medium text-slate-900 dark:text-white">123456</span></p>
+      <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">The verification code was shown on the previous screen for demo purposes.</p>
     </div>
   )
 }

@@ -4,8 +4,10 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { initializeDb } from '@/lib/db'
+import { hashPassword } from '@/lib/utils'
 import {
   seedUser,
+  seedAdminUser,
   seedAccounts,
   seedTransactions,
   seedCards,
@@ -25,19 +27,24 @@ export default function Home() {
   useEffect(() => {
     const users = JSON.parse(localStorage.getItem('apex_users') || '[]')
     if (users.length === 0) {
-      const demoUser = { ...seedUser, password: 'password123' }
-      initializeDb({
-        users: [demoUser as any],
-        accounts: seedAccounts as any[],
-        transactions: seedTransactions as any[],
-        cards: seedCards as any[],
-        transfers: seedTransfers as any[],
-        bills: seedBills as any[],
-        budgets: seedBudgets as any[],
-        goals: seedGoals as any[],
-        notifications: seedNotifications as any[],
-        devices: seedDevices as any[],
-        securityEvents: seedSecurityEvents as any[],
+      hashPassword('password123').then((hashedPassword) => {
+        hashPassword('admin123').then((hashedAdminPassword) => {
+          const demoUser = { ...seedUser, password: hashedPassword }
+          const adminUser = { ...seedAdminUser, password: hashedAdminPassword }
+          initializeDb({
+            users: [demoUser as any, adminUser as any],
+            accounts: seedAccounts as any[],
+            transactions: seedTransactions as any[],
+            cards: seedCards as any[],
+            transfers: seedTransfers as any[],
+            bills: seedBills as any[],
+            budgets: seedBudgets as any[],
+            goals: seedGoals as any[],
+            notifications: seedNotifications as any[],
+            devices: seedDevices as any[],
+            securityEvents: seedSecurityEvents as any[],
+          })
+        })
       })
     }
   }, [])

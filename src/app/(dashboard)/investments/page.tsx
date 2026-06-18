@@ -70,7 +70,7 @@ export default function InvestmentsPage() {
         </Card>
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Today's change</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Today&apos;s change</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1" style={{ fontFamily: 'var(--font-poppins)' }}>+$892.40</p>
             <Badge variant="success" className="mt-2">+0.57%</Badge>
           </CardContent>

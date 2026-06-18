@@ -16,6 +16,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [generatedOtp, setGeneratedOtp] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,6 +27,7 @@ export default function ForgotPasswordPage() {
     const result = await resetPassword(email)
     if (result.success) {
       setSuccess(true)
+      if (result.otp) setGeneratedOtp(result.otp)
     } else {
       setError(result.error || 'Failed to send reset email')
     }
@@ -51,9 +53,15 @@ export default function ForgotPasswordPage() {
             <CheckCircle2 className="h-8 w-8 text-emerald-500" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2" style={{ fontFamily: 'var(--font-poppins)' }}>Check your email</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-8">
-            We've sent a verification code to <strong>{email}</strong>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">
+            We&apos;ve sent a verification code to <strong>{email}</strong>
           </p>
+          {generatedOtp && (
+            <div className="mb-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+              <p className="text-xs text-amber-700 dark:text-amber-400 font-medium mb-1">Demo OTP Code</p>
+              <p className="text-2xl font-bold tracking-widest text-amber-900 dark:text-amber-300 font-mono">{generatedOtp}</p>
+            </div>
+          )}
           <Button onClick={() => router.push(`/verify-otp?email=${encodeURIComponent(email)}`)} className="w-full h-12">
             Enter verification code
           </Button>

@@ -38,7 +38,7 @@ export default function OverviewPage() {
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white" style={{ fontFamily: 'var(--font-poppins)' }}>
             Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName as string}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Here's what's happening with your accounts today.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Here&apos;s what&apos;s happening with your accounts today.</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
           <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />

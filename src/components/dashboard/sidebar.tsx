@@ -20,6 +20,7 @@ import {
   Bell,
   LogOut,
   ShieldCheck,
+  UserCog,
 } from 'lucide-react'
 
 const navSections = [
@@ -61,7 +62,19 @@ const navSections = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin } = useAuth()
+
+  const allSections = isAdmin
+    ? [
+        ...navSections,
+        {
+          label: 'Admin',
+          items: [
+            { href: '/admin', icon: UserCog, label: 'Admin Panel' },
+          ],
+        },
+      ]
+    : navSections
 
   return (
     <>
@@ -74,7 +87,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-3">
-          {navSections.map(section => (
+          {allSections.map(section => (
             <div key={section.label} className="mb-6">
               <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{section.label}</p>
               <div className="space-y-0.5">
@@ -109,6 +122,7 @@ export function Sidebar() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{user?.firstName as string} {user?.lastName as string}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email as string}</p>
+              {isAdmin && <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">Admin</p>}
             </div>
           </div>
           <button
