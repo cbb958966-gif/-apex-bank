@@ -36,6 +36,7 @@ function getInitialLockState(): { isLocked: boolean; lockEndTime: number | null 
         return { isLocked: true, lockEndTime: endTime }
       }
       localStorage.removeItem('apex_lock')
+      localStorage.removeItem('apex_attempts')
     }
   } catch { /* ignore */ }
   return { isLocked: false, lockEndTime: null }
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLockEndTime(null)
           setAttemptCount(0)
           localStorage.removeItem('apex_lock')
+          localStorage.removeItem('apex_attempts')
         }, remaining)
         return () => clearTimeout(timer)
       }
