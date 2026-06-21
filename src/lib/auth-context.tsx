@@ -104,13 +104,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     if (isLocked) return { success: false, error: 'Account locked. Please try again later.' }
 
-    const attempts = parseInt(localStorage.getItem('apex_attempts') || '0')
+    let attempts = parseInt(localStorage.getItem('apex_attempts') || '0')
     if (attempts >= MAX_ATTEMPTS) {
-      const endTime = Date.now() + LOCK_DURATION
-      localStorage.setItem('apex_lock', JSON.stringify({ endTime }))
-      setIsLocked(true)
-      setLockEndTime(endTime)
-      return { success: false, error: 'Too many failed attempts. Account locked for 15 minutes.' }
+      const lockData = localStorage.getItem('apex_lock')
+      if (!lockData || Date.now() >= JSON.parse(lockData).endTime) {
+        attempts = 0
+        localStorage.removeItem('apex_attempts')
+        localStorage.removeItem('apex_lock')
+      } else {
+        const endTime = Date.now() + LOCK_DURATION
+        localStorage.setItem('apex_lock', JSON.stringify({ endTime }))
+        setIsLocked(true)
+        setLockEndTime(endTime)
+        return { success: false, error: 'Too many failed attempts. Account locked for 15 minutes.' }
+      }
     }
 
     const foundUser = db.users.findByEmail(email)
